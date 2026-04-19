@@ -19,7 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include "stm32f4xx_hal_rcc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -85,7 +84,6 @@ static void MX_SPI2_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_USB_OTG_HS_PCD_Init(void);
-void vStartLedTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
