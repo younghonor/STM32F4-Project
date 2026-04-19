@@ -19,8 +19,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "FreeRTOS.h"
+#include "cmsis_os.h"
 #include "task.h"
 #include "main.h"
+#include "app_watchdog_task.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -45,6 +47,14 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 
+/* Definitions for LedTask */
+osThreadId_t LedTaskHandle;
+const osThreadAttr_t LedTask_attributes = {
+  .name = "LedTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+
 /* USER CODE END Variables */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -52,23 +62,43 @@
 
 /* USER CODE END FunctionPrototypes */
 
-/* GetIdleTaskMemory prototype (linked to static allocation support) */
-void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize );
-
-/* USER CODE BEGIN GET_IDLE_TASK_MEMORY */
-static StaticTask_t xIdleTaskTCBBuffer;
-static StackType_t xIdleStack[configMINIMAL_STACK_SIZE];
-
-void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize )
-{
-  *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
-  *ppxIdleTaskStackBuffer = &xIdleStack[0];
-  *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
-  /* place for user code */
-}
-/* USER CODE END GET_IDLE_TASK_MEMORY */
-
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 
+/* USER CODE BEGIN Header_StartLedTask */
+/**
+  * @brief  Function implementing the LedTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartLedTask */
+void vStartLedTask(void *argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for (;;) {
+    Watchdog_ReportAlive(xTaskGetCurrentTaskHandle());//提示找不到osGetThreadId函数，可能需要包含FreeRTOS.h头文件或者使用其他方式获取当前线程ID
+    LL_GPIO_TogglePin(MTS_LED_G_GPIO_Port, MTS_LED_G_Pin);
+    osDelay(1000);//HAL_Delay(1000);
+    LL_GPIO_TogglePin(MTS_LED_R_GPIO_Port, MTS_LED_R_Pin);
+    osDelay(1000);
+    //HAL_Delay(10000);
+  }
+  /* USER CODE END 5 */
+}
+
+
+void MX_FREERTOS_Init(void)
+{
+    /* creation of LedTask */
+    LedTaskHandle = osThreadNew(vStartLedTask, NULL, &LedTask_attributes);
+
+    osThreadId_t watchdogTaskHandle = osThreadNew(vStartWatchdogTask, NULL, &(osThreadAttr_t){
+      .name = "watchdogTask",
+      .priority = osPriorityBelowNormal,
+      .stack_size = 128
+    });
+}
+
 /* USER CODE END Application */
+
