@@ -29,12 +29,12 @@
 #include <elog.h>
 #include <stdio.h>
 #include "main.h"
-#include "cmsis_os2.h"
+#include "cmsis_os.h"
 
 extern osSemaphoreId_t elog_lockHandle;
 extern osSemaphoreId_t elog_asyncHandle;
 extern osSemaphoreId_t elog_dma_lockHandle;
-
+extern void MX_USART1_DMA_Send(uint8_t *pData, uint16_t Size);
 
 /**
  * EasyLogger port initialize
@@ -68,7 +68,7 @@ void elog_port_deinit(void) {
 void elog_port_output(const char *log, size_t size) {
     
     /* add your code here */
-    LL_UART_Transmit_DMA(USART1, (uint8_t *)log, size);
+    MX_USART1_DMA_Send((uint8_t *)log, size);
     osSemaphoreAcquire(elog_dma_lockHandle, osWaitForever);
 
 }

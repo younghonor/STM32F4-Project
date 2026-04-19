@@ -84,6 +84,9 @@ osSemaphoreId_t elog_dma_lockHandle;
 const osSemaphoreAttr_t elog_dma_lock_attributes = {
   .name = "elog_dma_lock"
 };
+/* freertos.c */
+SemaphoreHandle_t uartTxCompleteSem;
+SemaphoreHandle_t uartRxIdleSem;
 
 /* USER CODE END Variables */
 
@@ -161,6 +164,11 @@ void MX_FREERTOS_Init(void)
 
   /* creation of elog_dma_lock */
   elog_dma_lockHandle = osSemaphoreNew(1, 1, &elog_dma_lock_attributes);
+    // 创建二值信号量
+    uartTxCompleteSem = xSemaphoreCreateBinary();
+    uartRxIdleSem    = xSemaphoreCreateBinary();
+    // 初始状态下，发送信号量应为可用，表示可以发送
+    xSemaphoreGive(uartTxCompleteSem);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
