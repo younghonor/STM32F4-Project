@@ -46,11 +46,17 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     ./Core/Src/app_watchdog_task.c
+    ./Components/easylogger/src/elog.c
+    ./Components/easylogger/src/elog_async.c
+    ./Components/easylogger/src/elog_buf.c
+    ./Components/easylogger/src/elog_utils.c
+    ./Components/easylogger/port/elog_port.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+    ./Components/easylogger/inc
 )
 
 # Add project symbols (macros)

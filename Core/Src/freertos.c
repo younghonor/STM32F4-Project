@@ -26,11 +26,14 @@
 /* USER CODE BEGIN Includes */
 #include "cmsis_os.h"
 #include "app_watchdog_task.h"
+#define TAG "FreeRTOS"
+#include "elog.h"
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+typedef StaticTask_t osStaticThreadDef_t;
 
 /* USER CODE END PTD */
 
@@ -48,11 +51,38 @@
 /* USER CODE BEGIN Variables */
 
 /* Definitions for LedTask */
-osThreadId_t LedTaskHandle;
 const osThreadAttr_t LedTask_attributes = {
   .name = "LedTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
+};
+
+/* Definitions for elog */
+osThreadId_t elogHandle;
+uint32_t elogBuffer[ 512 ];
+osStaticThreadDef_t elogControlBlock;
+const osThreadAttr_t elog_attributes = {
+  .name = "elog",
+  .stack_mem = &elogBuffer[0],
+  .stack_size = sizeof(elogBuffer),
+  .cb_mem = &elogControlBlock,
+  .cb_size = sizeof(elogControlBlock),
+  .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for elog_lock */
+osSemaphoreId_t elog_lockHandle;
+const osSemaphoreAttr_t elog_lock_attributes = {
+  .name = "elog_lock"
+};
+/* Definitions for elog_async */
+osSemaphoreId_t elog_asyncHandle;
+const osSemaphoreAttr_t elog_async_attributes = {
+  .name = "elog_async"
+};
+/* Definitions for elog_dma_lock */
+osSemaphoreId_t elog_dma_lockHandle;
+const osSemaphoreAttr_t elog_dma_lock_attributes = {
+  .name = "elog_dma_lock"
 };
 
 /* USER CODE END Variables */
@@ -100,22 +130,71 @@ void vStartLedTask(void *argument)
     osDelay(1000);//HAL_Delay(1000);
     LL_GPIO_TogglePin(MTS_LED_R_GPIO_Port, MTS_LED_R_Pin);
     osDelay(1000);
-    //HAL_Delay(10000);
+	  elog_i(TAG, "HelloWorld");
   }
   /* USER CODE END 5 */
 }
 
+extern void elog_entry(void *argument);
 
+/**
+  * @brief  FreeRTOS initialization
+  * @param  None
+  * @retval None
+  */
 void MX_FREERTOS_Init(void)
 {
+    /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* Create the semaphores(s) */
+  /* creation of elog_lock */
+  elog_lockHandle = osSemaphoreNew(1, 1, &elog_lock_attributes);
+
+  /* creation of elog_async */
+  elog_asyncHandle = osSemaphoreNew(1, 1, &elog_async_attributes);
+
+  /* creation of elog_dma_lock */
+  elog_dma_lockHandle = osSemaphoreNew(1, 1, &elog_dma_lock_attributes);
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
     /* creation of LedTask */
-    LedTaskHandle = osThreadNew(vStartLedTask, NULL, &LedTask_attributes);
+    osThreadId_t LedTaskHandle = osThreadNew(vStartLedTask, NULL, &LedTask_attributes);
 
     osThreadId_t watchdogTaskHandle = osThreadNew(vStartWatchdogTask, NULL, &(osThreadAttr_t){
       .name = "watchdogTask",
       .priority = osPriorityBelowNormal,
       .stack_size = 128
     });
+
+  /* creation of elog */
+  elogHandle = osThreadNew(elog_entry, NULL, &elog_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
 }
 
 /* USER CODE END Application */

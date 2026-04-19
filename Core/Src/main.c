@@ -22,6 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "elog.h"
 
 /* USER CODE END Includes */
 
@@ -113,6 +114,7 @@ static void USR_ResetFlag_Get(void){
   __HAL_RCC_CLEAR_RESET_FLAGS();
 
 }
+
 /* USER CODE END 0 */
 
 /**
@@ -164,6 +166,14 @@ int main(void)
   //printf("HCLK=%lu\r\n", HCLK);
   //printf("Systick LOAD=%lu\r\n", SysTick->LOAD);
   //printf("Systick CTRL=0x%08lx\r\n", SysTick->CTRL);
+  elog_init();
+  elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL & ~ELOG_FMT_P_INFO);
+  elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
+  elog_set_fmt(ELOG_LVL_WARN, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
+  elog_set_fmt(ELOG_LVL_INFO, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
+  elog_set_fmt(ELOG_LVL_DEBUG, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_P_INFO));
+  elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_P_INFO));
+  elog_start();
 
   /* USER CODE END 2 */
 
