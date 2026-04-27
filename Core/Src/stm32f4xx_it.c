@@ -183,8 +183,8 @@ void USART1_IRQHandler(void)
         uint32_t recv_len = RX_BUF_SIZE - remain_cnt;
         
         if (recv_len > 0) {
-            extern uint8_t usart1_rx_task_buf[];
-            memcpy(usart1_rx_task_buf, usart1_rx_buf, recv_len);
+            //extern uint8_t usart1_rx_task_buf[];
+            //memcpy(usart1_rx_task_buf, usart1_rx_buf, recv_len);
         }
         
         LL_DMA_SetDataLength(DMA2, LL_DMA_STREAM_5, RX_BUF_SIZE);
@@ -235,7 +235,7 @@ void DMA2_Stream7_IRQHandler(void)
   /* USER CODE BEGIN DMA2_Stream7_IRQn 0 */
     if (LL_DMA_IsActiveFlag_TC7(DMA2)) {
         LL_DMA_ClearFlag_TC7(DMA2);
-        LL_DMA_DisableChannel(DMA2, LL_DMA_STREAM_7);
+        LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_7);
         LL_USART_DisableDMAReq_TX(USART1);
         
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;

@@ -5,6 +5,9 @@
 #include "semphr.h"
 #define MAX_TASK_CHECK 8
 
+#define LOG_TAG "watchdog-task"
+#include "elog.h"
+
 typedef struct {
     osThreadId_t handle;
     TickType_t last_alive_tick;

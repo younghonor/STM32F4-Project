@@ -10,29 +10,26 @@
             "name": "STM32Cube: STM32 Launch JLink GDB Server",
             "origin": "snippet",
             "cwd": "${workspaceFolder}",
-            "preBuild": "${command:st-stm32-ide-debug-launch.build}",
-            "runEntry": "main",
-            "device": "STM32F407IE",
-            "interface": "SWD",
+            "program": "${workspaceFolder}/build/Debug/Stm32CubeMX-FreeRTOS.elf",
+
             "imagesAndSymbols": [
                 {
                     "imageFileName": "${command:st-stm32-ide-debug-launch.get-projects-binary-from-context1}"
                 }
-            ]
+            ],
+            "serverDevice": "STM32F407IE",
+            "serverInterface": "SWD",
+            "serverSpeed": "4000",
+            "serverPort": "2331",
+            "serverSingleRun": true,
+            "runEntry": "main",
+            "initCommands": [
+                "monitor halt",
+                "monitor reset",
+                "load",
+                "monitor reset"
+            ],
+
         },
-        {
-            "type": "stlinkgdbtarget",
-            "request": "launch",
-            "name": "STM32Cube: STM32 Launch ST-Link GDB Server",
-            "origin": "snippet",
-            "cwd": "${workspaceFolder}",
-            "preBuild": "${command:st-stm32-ide-debug-launch.build}",
-            "runEntry": "main",
-            "imagesAndSymbols": [
-                {
-                    "imageFileName": "${command:st-stm32-ide-debug-launch.get-projects-binary-from-context1}"
-                }
-            ]
-        }
     ]
 }
