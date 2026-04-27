@@ -21,12 +21,13 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "cmsis_os.h"
+#include "semphr.h"
 #include "app_watchdog_task.h"
-#define TAG "FreeRTOS"
+#define LOG_TAG "FreeRTOS"
 #include "elog.h"
 
 /* USER CODE END Includes */
@@ -49,14 +50,12 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
 /* Definitions for LedTask */
 const osThreadAttr_t LedTask_attributes = {
   .name = "LedTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-
 /* Definitions for elog */
 osThreadId_t elogHandle;
 uint32_t elogBuffer[ 512 ];
@@ -85,15 +84,27 @@ const osSemaphoreAttr_t elog_dma_lock_attributes = {
   .name = "elog_dma_lock"
 };
 /* freertos.c */
-SemaphoreHandle_t uartTxCompleteSem;
-SemaphoreHandle_t uartRxIdleSem;
+xSemaphoreHandle uartTxCompleteSem;
+xSemaphoreHandle uartRxIdleSem;
 
 /* USER CODE END Variables */
-
+/* Definitions for DefaultTask */
+osThreadId_t DefaultTaskHandle;
+const osThreadAttr_t DefaultTask_attributes = {
+  .name = "DefaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+extern void elog_entry(void *argument);
+void vStartLedTask(void *argument);
 
 /* USER CODE END FunctionPrototypes */
+
+void StartDefaultTask(void *argument);
+
+void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* Hook prototypes */
 void vApplicationIdleHook(void);
@@ -113,41 +124,13 @@ void vApplicationIdleHook( void )
 }
 /* USER CODE END 2 */
 
-/* Private application code --------------------------------------------------*/
-/* USER CODE BEGIN Application */
-
-/* USER CODE BEGIN Header_StartLedTask */
-/**
-  * @brief  Function implementing the LedTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartLedTask */
-void vStartLedTask(void *argument)
-{
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for (;;) {
-    Watchdog_ReportAlive(xTaskGetCurrentTaskHandle());//提示找不到osGetThreadId函数，可能需要包含FreeRTOS.h头文件或者使用其他方式获取当前线程ID
-    LL_GPIO_TogglePin(MTS_LED_G_GPIO_Port, MTS_LED_G_Pin);
-    osDelay(1000);//HAL_Delay(1000);
-    LL_GPIO_TogglePin(MTS_LED_R_GPIO_Port, MTS_LED_R_Pin);
-    osDelay(1000);
-	  elog_i(TAG, "HelloWorld");
-  }
-  /* USER CODE END 5 */
-}
-
-extern void elog_entry(void *argument);
-
 /**
   * @brief  FreeRTOS initialization
   * @param  None
   * @retval None
   */
-void MX_FREERTOS_Init(void)
-{
-    /* USER CODE BEGIN Init */
+void MX_FREERTOS_Init(void) {
+  /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
 
@@ -164,10 +147,8 @@ void MX_FREERTOS_Init(void)
 
   /* creation of elog_dma_lock */
   elog_dma_lockHandle = osSemaphoreNew(1, 1, &elog_dma_lock_attributes);
-    // 创建二值信号量
     uartTxCompleteSem = xSemaphoreCreateBinary();
     uartRxIdleSem    = xSemaphoreCreateBinary();
-    // 初始状态下，发送信号量应为可用，表示可以发送
     xSemaphoreGive(uartTxCompleteSem);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -183,6 +164,8 @@ void MX_FREERTOS_Init(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
+  /* creation of DefaultTask */
+  DefaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &DefaultTask_attributes);
     /* creation of LedTask */
     osThreadId_t LedTaskHandle = osThreadNew(vStartLedTask, NULL, &LedTask_attributes);
 
@@ -204,6 +187,50 @@ void MX_FREERTOS_Init(void)
   /* USER CODE END RTOS_EVENTS */
 
 }
+
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the DefaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void *argument)
+{
+  /* USER CODE BEGIN StartDefaultTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartDefaultTask */
+}
+
+/* Private application code --------------------------------------------------*/
+/* USER CODE BEGIN Application */
+/* USER CODE BEGIN Header_StartLedTask */
+/**
+  * @brief  Function implementing the LedTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartLedTask */
+void vStartLedTask(void *argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for (;;) {
+    Watchdog_ReportAlive(xTaskGetCurrentTaskHandle());
+    LL_GPIO_TogglePin(MTS_LED_G_GPIO_Port, MTS_LED_G_Pin);
+    osDelay(1000);//HAL_Delay(1000);
+    LL_GPIO_TogglePin(MTS_LED_R_GPIO_Port, MTS_LED_R_Pin);
+    osDelay(1000);
+	  log_i("led task running...");
+  }
+  /* USER CODE END 5 */
+}
+
+
 
 /* USER CODE END Application */
 

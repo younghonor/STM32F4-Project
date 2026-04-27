@@ -29,7 +29,7 @@
 #include <elog.h>
 #include <stdio.h>
 #include "main.h"
-#include "cmsis_os.h"
+#include "cmsis_os2.h"
 
 extern osSemaphoreId_t elog_lockHandle;
 extern osSemaphoreId_t elog_asyncHandle;

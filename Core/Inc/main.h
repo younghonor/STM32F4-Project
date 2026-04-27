@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -31,6 +31,8 @@ extern "C" {
 
 #include "stm32f4xx_ll_adc.h"
 #include "stm32f4xx_ll_crc.h"
+#include "stm32f4xx_ll_dma.h"
+#include "stm32f4xx_ll_i2c.h"
 #include "stm32f4xx_ll_iwdg.h"
 #include "stm32f4xx_ll_rcc.h"
 #include "stm32f4xx_ll_bus.h"
@@ -39,7 +41,6 @@ extern "C" {
 #include "stm32f4xx_ll_cortex.h"
 #include "stm32f4xx_ll_utils.h"
 #include "stm32f4xx_ll_pwr.h"
-#include "stm32f4xx_ll_dma.h"
 #include "stm32f4xx_ll_rtc.h"
 #include "stm32f4xx_ll_spi.h"
 #include "stm32f4xx_ll_tim.h"
@@ -65,8 +66,6 @@ extern "C" {
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */
-
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
+#include "semphr.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,6 +60,12 @@
 extern TIM_HandleTypeDef htim7;
 
 /* USER CODE BEGIN EV */
+extern SemaphoreHandle_t uartRxIdleSem;
+extern SemaphoreHandle_t uartTxCompleteSem;
+
+extern uint8_t usart1_rx_buf[];
+#define RX_BUF_SIZE 256
+
 
 /* USER CODE END EV */
 
@@ -152,11 +159,6 @@ void DebugMon_Handler(void)
 
   /* USER CODE END DebugMonitor_IRQn 1 */
 }
-extern SemaphoreHandle_t uartRxIdleSem;
-extern SemaphoreHandle_t uartTxCompleteSem;
-
-extern uint8_t usart1_rx_buf[];
-#define RX_BUF_SIZE 256
 
 /******************************************************************************/
 /* STM32F4xx Peripheral Interrupt Handlers                                    */
@@ -172,35 +174,26 @@ void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
 
-    // 检查是否为空闲中断
     if (LL_USART_IsActiveFlag_IDLE(USART1)) {
-        // 1. 清除空闲中断标志
         LL_USART_ClearFlag_IDLE(USART1);
         
-        // 2. 停止DMA接收
-        LL_DMA_DisableChannel(DMA2, LL_DMA_STREAM_5);
+        LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5);
         
-        // 3. 计算接收到的数据长度
         uint32_t remain_cnt = LL_DMA_GetDataLength(DMA2, LL_DMA_STREAM_5);
         uint32_t recv_len = RX_BUF_SIZE - remain_cnt;
         
-        // 4. 如果有数据，拷贝到任务处理区
         if (recv_len > 0) {
             extern uint8_t usart1_rx_task_buf[];
             memcpy(usart1_rx_task_buf, usart1_rx_buf, recv_len);
-            // 可在此处设置一个全局标志，告知任务有数据
         }
         
-        // 5. 重置DMA并重新开始接收
         LL_DMA_SetDataLength(DMA2, LL_DMA_STREAM_5, RX_BUF_SIZE);
-        LL_DMA_EnableChannel(DMA2, LL_DMA_STREAM_5);
+        LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5);
         
-        // 6. 释放信号量，通知任务处理数据
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR(uartRxIdleSem, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
-    // 其他中断处理...
   /* USER CODE END USART1_IRQn 0 */
   /* USER CODE BEGIN USART1_IRQn 1 */
 
@@ -240,14 +233,11 @@ void DMA2_Stream2_IRQHandler(void)
 void DMA2_Stream7_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Stream7_IRQn 0 */
-    // 检查传输完成标志
     if (LL_DMA_IsActiveFlag_TC7(DMA2)) {
         LL_DMA_ClearFlag_TC7(DMA2);
         LL_DMA_DisableChannel(DMA2, LL_DMA_STREAM_7);
-        // 禁止USART的DMA发送请求
         LL_USART_DisableDMAReq_TX(USART1);
         
-        // 释放发送完成信号量
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR(uartTxCompleteSem, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);

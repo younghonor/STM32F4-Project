@@ -1,11 +1,12 @@
 #include "app_watchdog_task.h"
 #include "main.h"
 #include <stdint.h>
-
+#include "FreeRTOS.h" // Ensure this line exists
+#include "semphr.h"
 #define MAX_TASK_CHECK 8
 
 typedef struct {
-    TaskHandle_t handle;
+    osThreadId_t handle;
     TickType_t last_alive_tick;
 } task_watchdog_entry_t;
 
@@ -18,7 +19,7 @@ void Watchdog_Init(void){
     }
 }
 
-void Watchdog_ReportAlive(TaskHandle_t handle) {
+void Watchdog_ReportAlive(osThreadId_t handle) {
     for (int i = 0; i < MAX_TASK_CHECK; i++) {
         if (g_watchdog_table[i].handle == handle) {
             g_watchdog_table[i].last_alive_tick = xTaskGetTickCount();
@@ -30,7 +31,7 @@ void Watchdog_ReportAlive(TaskHandle_t handle) {
 static uint8_t Watchdog_CheckAlive(void) {
     uint8_t all_alive = 1;
     for (int i = 0; i < MAX_TASK_CHECK; i++) {
-        if (g_watchdog_table[i].handle == NULL) 
+        if (g_watchdog_table[i].handle == NULL)
             continue; // 跳过未注册的任务
 
         TickType_t current_tick = xTaskGetTickCount();
@@ -43,8 +44,10 @@ static uint8_t Watchdog_CheckAlive(void) {
 }
 
 void vStartWatchdogTask(void *argument) {
-    // 定义看门狗任务的代码，例如：
+    SemaphoreHandle_t xSemaphore; // Ensure you include this line if using semaphores
+
     for(;;) {
+         log_i("watchdog task running...");
         if (Watchdog_CheckAlive() == 0) {
             // 如果有任务没有报告还活着，可以选择重置系统或执行其他操作
             NVIC_SystemReset();
