@@ -25,16 +25,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "semphr.h"
-#include "app_watchdog_task.h"
-#define LOG_TAG "FreeRTOS"
-#include "elog.h"
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef StaticTask_t osStaticThreadDef_t;
 
 /* USER CODE END PTD */
 
@@ -50,42 +45,6 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-/* Definitions for LedTask */
-const osThreadAttr_t LedTask_attributes = {
-  .name = "LedTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for elog */
-osThreadId_t elogHandle;
-uint32_t elogBuffer[ 512 ];
-osStaticThreadDef_t elogControlBlock;
-const osThreadAttr_t elog_attributes = {
-  .name = "elog",
-  .stack_mem = &elogBuffer[0],
-  .stack_size = sizeof(elogBuffer),
-  .cb_mem = &elogControlBlock,
-  .cb_size = sizeof(elogControlBlock),
-  .priority = (osPriority_t) osPriorityLow,
-};
-/* Definitions for elog_lock */
-osSemaphoreId_t elog_lockHandle;
-const osSemaphoreAttr_t elog_lock_attributes = {
-  .name = "elog_lock"
-};
-/* Definitions for elog_async */
-osSemaphoreId_t elog_asyncHandle;
-const osSemaphoreAttr_t elog_async_attributes = {
-  .name = "elog_async"
-};
-/* Definitions for elog_dma_lock */
-osSemaphoreId_t elog_dma_lockHandle;
-const osSemaphoreAttr_t elog_dma_lock_attributes = {
-  .name = "elog_dma_lock"
-};
-/* freertos.c */
-xSemaphoreHandle uartTxCompleteSem;
-xSemaphoreHandle uartRxIdleSem;
 
 /* USER CODE END Variables */
 /* Definitions for DefaultTask */
@@ -95,10 +54,9 @@ const osThreadAttr_t DefaultTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-extern void elog_entry(void *argument);
-void vStartLedTask(void *argument);
 
 /* USER CODE END FunctionPrototypes */
 
@@ -138,19 +96,6 @@ void MX_FREERTOS_Init(void) {
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
-  /* Create the semaphores(s) */
-  /* creation of elog_lock */
-  elog_lockHandle = osSemaphoreNew(1, 1, &elog_lock_attributes);
-
-  /* creation of elog_async */
-  elog_asyncHandle = osSemaphoreNew(1, 1, &elog_async_attributes);
-
-  /* creation of elog_dma_lock */
-  elog_dma_lockHandle = osSemaphoreNew(1, 1, &elog_dma_lock_attributes);
-    uartTxCompleteSem = xSemaphoreCreateBinary();
-    uartRxIdleSem    = xSemaphoreCreateBinary();
-    xSemaphoreGive(uartTxCompleteSem);
-
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -166,17 +111,6 @@ void MX_FREERTOS_Init(void) {
   /* Create the thread(s) */
   /* creation of DefaultTask */
   DefaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &DefaultTask_attributes);
-    /* creation of LedTask */
-    osThreadId_t LedTaskHandle = osThreadNew(vStartLedTask, NULL, &LedTask_attributes);
-
-    osThreadId_t watchdogTaskHandle = osThreadNew(vStartWatchdogTask, NULL, &(osThreadAttr_t){
-      .name = "watchdogTask",
-      .priority = osPriorityBelowNormal,
-      .stack_size = 128
-    });
-
-  /* creation of elog */
-  elogHandle = osThreadNew(elog_entry, NULL, &elog_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -208,29 +142,6 @@ void StartDefaultTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-/* USER CODE BEGIN Header_StartLedTask */
-/**
-  * @brief  Function implementing the LedTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartLedTask */
-void vStartLedTask(void *argument)
-{
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for (;;) {
-    Watchdog_ReportAlive(xTaskGetCurrentTaskHandle());
-    LL_GPIO_TogglePin(MTS_LED_G_GPIO_Port, MTS_LED_G_Pin);
-    osDelay(1000);//HAL_Delay(1000);
-    LL_GPIO_TogglePin(MTS_LED_R_GPIO_Port, MTS_LED_R_Pin);
-    osDelay(1000);
-	  log_i("led task running...");
-  }
-  /* USER CODE END 5 */
-}
-
-
 
 /* USER CODE END Application */
 

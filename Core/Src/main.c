@@ -33,23 +33,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "semphr.h"
-#define LOG_TAG "main"
-#include "elog.h"
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef enum {
-  RESET_CAUSE_UNKNOWN = 0,
-  RESET_CAUSE_POWER_ON,
-  RESET_CAUSE_PIN,
-  RESET_CAUSE_SOFTWARE,
-  RESET_CAUSE_IWDG,
-  RESET_CAUSE_WWDG,
-  RESET_CAUSE_BROWNOUT
-} reset_cause_t;
 
 /* USER CODE END PTD */
 
@@ -66,15 +54,6 @@ typedef enum {
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-reset_cause_t g_reset_cause = RESET_CAUSE_UNKNOWN;
-uint32_t g_reset_flags = 0;
-
-#define RX_BUF_SIZE 256
-uint8_t usart1_rx_buf[RX_BUF_SIZE];
-
-// �ź������
-extern SemaphoreHandle_t uartTxCompleteSem;
-extern SemaphoreHandle_t uartRxIdleSem;
 
 /* USER CODE END PV */
 
@@ -87,28 +66,6 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-static void USR_ResetFlag_Get(void){
-  g_reset_flags = RCC->CSR;
-
-  if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST)) {
-    g_reset_cause = RESET_CAUSE_IWDG;
-  } else if (__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST)) {
-    g_reset_cause = RESET_CAUSE_WWDG;
-  } else if (__HAL_RCC_GET_FLAG(RCC_FLAG_SFTRST)) {
-    g_reset_cause = RESET_CAUSE_SOFTWARE;
-  } else if (__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST)) {
-    g_reset_cause = RESET_CAUSE_BROWNOUT;
-  } else if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST)) {
-    g_reset_cause = RESET_CAUSE_POWER_ON;
-  } else if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST)) {
-    g_reset_cause = RESET_CAUSE_PIN;
-  } else {
-    g_reset_cause = RESET_CAUSE_UNKNOWN;
-  }
-
-  __HAL_RCC_CLEAR_RESET_FLAGS();
-
-}
 
 /* USER CODE END 0 */
 
@@ -129,7 +86,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  USR_ResetFlag_Get();
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -149,36 +106,13 @@ int main(void)
   MX_RTC_Init();
   MX_SPI1_Init();
   MX_TIM1_Init();
-  MX_USART1_UART_Init();
   MX_I2C2_Init();
   MX_I2C3_Init();
   MX_SPI2_Init();
-  MX_SPI3_Init();
   MX_TIM8_Init();
   MX_USB_OTG_HS_PCD_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-
-  //size_t HCLK = HAL_RCC_GetHCLKFreq();
-  //printf("SystemCoreClock=%lu\r\n", SystemCoreClock);
-  //printf("HCLK=%lu\r\n", HCLK);
-  //printf("Systick LOAD=%lu\r\n", SysTick->LOAD);
-  //printf("Systick CTRL=0x%08lx\r\n", SysTick->CTRL);
-      
-  LL_DMA_SetMemoryAddress(DMA2, LL_DMA_STREAM_5, (uint32_t)usart1_rx_buf);
-  LL_DMA_SetDataLength(DMA2, LL_DMA_STREAM_5, RX_BUF_SIZE);
-  LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5);
-  
-  LL_USART_EnableDMAReq_RX(USART1);
-  LL_USART_EnableIT_IDLE(USART1);
-    
-  elog_init();
-  elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL & ~ELOG_FMT_P_INFO);
-  elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
-  elog_set_fmt(ELOG_LVL_WARN, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
-  elog_set_fmt(ELOG_LVL_INFO, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
-  elog_set_fmt(ELOG_LVL_DEBUG, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_P_INFO));
-  elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_P_INFO));
-  elog_start();
 
   /* USER CODE END 2 */
 
@@ -208,52 +142,42 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
-  LL_FLASH_SetLatency(LL_FLASH_LATENCY_5);
-  while(LL_FLASH_GetLatency()!= LL_FLASH_LATENCY_5)
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  /** Configure the main internal regulator output voltage
+  */
+  __HAL_RCC_PWR_CLK_ENABLE();
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 168;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
+    Error_Handler();
   }
-  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
-  LL_RCC_HSI_SetCalibTrimming(16);
-  LL_RCC_HSI_Enable();
 
-   /* Wait till HSI is ready */
-  while(LL_RCC_HSI_IsReady() != 1)
-  {
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  }
-  LL_RCC_LSI_Enable();
-
-   /* Wait till LSI is ready */
-  while(LL_RCC_LSI_IsReady() != 1)
-  {
-
-  }
-  LL_PWR_EnableBkUpAccess();
-  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI, LL_RCC_PLLM_DIV_8, 168, LL_RCC_PLLP_DIV_2);
-  LL_RCC_PLL_Enable();
-
-   /* Wait till PLL is ready */
-  while(LL_RCC_PLL_IsReady() != 1)
-  {
-
-  }
-  while (LL_PWR_IsActiveFlag_VOS() == 0)
-  {
-  }
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
-  LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_4);
-  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_2);
-  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
-
-   /* Wait till System clock is ready */
-  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
-  {
-
-  }
-  LL_SetSystemCoreClock(168000000);
-
-   /* Update the time base */
-  if (HAL_InitTick (TICK_INT_PRIORITY) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
     Error_Handler();
   }
