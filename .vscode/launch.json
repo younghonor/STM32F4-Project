@@ -10,7 +10,7 @@
             "name": "STM32Cube: STM32 Launch JLink GDB Server",
             "origin": "snippet",
             "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/build/Debug/Stm32CubeMX-FreeRTOS.elf",
+            "program": "${workspaceFolder}/build/Debug/Stm32CubeMX-FreeRTOS-Hal.elf",
 
             "imagesAndSymbols": [
                 {

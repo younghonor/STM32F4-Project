@@ -33,17 +33,29 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "semphr.h"
+#define LOG_TAG "main"
+#include "elog.h"
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+typedef enum {
+  RESET_CAUSE_UNKNOWN = 0,
+  RESET_CAUSE_POWER_ON,
+  RESET_CAUSE_PIN,
+  RESET_CAUSE_SOFTWARE,
+  RESET_CAUSE_IWDG,
+  RESET_CAUSE_WWDG,
+  RESET_CAUSE_BROWNOUT
+} reset_cause_t;
 
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define RX_BUF_SIZE 256
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,6 +66,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+reset_cause_t g_reset_cause = RESET_CAUSE_UNKNOWN;
+uint32_t g_reset_flags = 0;
+
+uint8_t usart1_rx_buf[RX_BUF_SIZE];
 
 /* USER CODE END PV */
 
@@ -66,6 +82,34 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
+    if (huart->Instance == huart3.Instance) {
+        extern osSemaphoreId_t elog_dma_lockHandle;
+        osSemaphoreRelease(elog_dma_lockHandle);
+    }
+}
+static void USR_ResetFlag_Get(void){
+  g_reset_flags = RCC->CSR;
+
+  if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST)) {
+    g_reset_cause = RESET_CAUSE_IWDG;
+  } else if (__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST)) {
+    g_reset_cause = RESET_CAUSE_WWDG;
+  } else if (__HAL_RCC_GET_FLAG(RCC_FLAG_SFTRST)) {
+    g_reset_cause = RESET_CAUSE_SOFTWARE;
+  } else if (__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST)) {
+    g_reset_cause = RESET_CAUSE_BROWNOUT;
+  } else if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST)) {
+    g_reset_cause = RESET_CAUSE_POWER_ON;
+  } else if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST)) {
+    g_reset_cause = RESET_CAUSE_PIN;
+  } else {
+    g_reset_cause = RESET_CAUSE_UNKNOWN;
+  }
+
+  __HAL_RCC_CLEAR_RESET_FLAGS();
+
+}
 
 /* USER CODE END 0 */
 
@@ -86,7 +130,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  USR_ResetFlag_Get();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -114,6 +158,22 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  //size_t HCLK = HAL_RCC_GetHCLKFreq();
+  //printf("SystemCoreClock=%lu\r\n", SystemCoreClock);
+  //printf("HCLK=%lu\r\n", HCLK);
+  //printf("Systick LOAD=%lu\r\n", SysTick->LOAD);
+  //printf("Systick CTRL=0x%08lx\r\n", SysTick->CTRL);
+
+#if 1
+  elog_init();
+  elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL & ~ELOG_FMT_P_INFO);
+  elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
+  elog_set_fmt(ELOG_LVL_WARN, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
+  elog_set_fmt(ELOG_LVL_INFO, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
+  elog_set_fmt(ELOG_LVL_DEBUG, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_P_INFO));
+  elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_P_INFO));
+  elog_start();
+#endif 
   /* USER CODE END 2 */
 
   /* Init scheduler */
