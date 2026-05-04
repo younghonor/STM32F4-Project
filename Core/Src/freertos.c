@@ -95,6 +95,7 @@ const osThreadAttr_t DefaultTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 extern void elog_entry(void *argument);
@@ -138,6 +139,8 @@ void MX_FREERTOS_Init(void) {
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
   /* Create the semaphores(s) */
   /* creation of elog_lock */
   elog_lockHandle = osSemaphoreNew(1, 1, &elog_lock_attributes);
@@ -147,12 +150,11 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of elog_dma_lock */
   elog_dma_lockHandle = osSemaphoreNew(1, 1, &elog_dma_lock_attributes);
-    uartTxCompleteSem = xSemaphoreCreateBinary();
-    uartRxIdleSem    = xSemaphoreCreateBinary();
-    xSemaphoreGive(uartTxCompleteSem);
+  uartTxCompleteSem = xSemaphoreCreateBinary();
+  uartRxIdleSem    = xSemaphoreCreateBinary();
+  xSemaphoreGive(uartTxCompleteSem);
 
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
+
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -166,10 +168,13 @@ void MX_FREERTOS_Init(void) {
   /* Create the thread(s) */
   /* creation of DefaultTask */
   DefaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &DefaultTask_attributes);
-    /* creation of LedTask */
-    osThreadId_t LedTaskHandle = osThreadNew(vStartLedTask, NULL, &LedTask_attributes);
 
-    osThreadId_t watchdogTaskHandle = osThreadNew(vStartWatchdogTask, NULL, &(osThreadAttr_t){
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* creation of LedTask */
+  osThreadId_t LedTaskHandle = osThreadNew(vStartLedTask, NULL, &LedTask_attributes);
+
+  osThreadId_t watchdogTaskHandle = osThreadNew(vStartWatchdogTask, NULL, &(osThreadAttr_t){
       .name = "watchdogTask",
       .priority = osPriorityBelowNormal,
       .stack_size = 128
@@ -178,8 +183,6 @@ void MX_FREERTOS_Init(void) {
   /* creation of elog */
   elogHandle = osThreadNew(elog_entry, NULL, &elog_attributes);
 
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -202,6 +205,7 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
     osDelay(1);
+    log_i("default task running...");
   }
   /* USER CODE END StartDefaultTask */
 }

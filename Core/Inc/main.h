@@ -44,7 +44,6 @@ extern "C" {
 #include "stm32f4xx_ll_rtc.h"
 #include "stm32f4xx_ll_spi.h"
 #include "stm32f4xx_ll_tim.h"
-#include "stm32f4xx_ll_usart.h"
 #include "stm32f4xx_ll_gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -93,8 +92,6 @@ void Error_Handler(void);
 #define MTS_SPI1_MISO_GPIO_Port GPIOB
 #define MTS_SPI1_CLK_Pin LL_GPIO_PIN_3
 #define MTS_SPI1_CLK_GPIO_Port GPIOB
-#define MTS_SPI3_MOSI_Pin LL_GPIO_PIN_12
-#define MTS_SPI3_MOSI_GPIO_Port GPIOC
 #define MTS_GPIO0_Pin LL_GPIO_PIN_4
 #define MTS_GPIO0_GPIO_Port GPIOE
 #define MTS_GPIO2_Pin LL_GPIO_PIN_5
@@ -111,10 +108,10 @@ void Error_Handler(void);
 #define MTS_BID2_GPIO_Port GPIOG
 #define MTS_IO_DIR4_Pin LL_GPIO_PIN_10
 #define MTS_IO_DIR4_GPIO_Port GPIOG
-#define MTS_SPI3_MISO_Pin LL_GPIO_PIN_11
-#define MTS_SPI3_MISO_GPIO_Port GPIOC
-#define MTS_SPI3_CLK_Pin LL_GPIO_PIN_10
-#define MTS_SPI3_CLK_GPIO_Port GPIOC
+#define MTS_USART3_RX_Pin LL_GPIO_PIN_11
+#define MTS_USART3_RX_GPIO_Port GPIOC
+#define MTS_USART3_TX_Pin LL_GPIO_PIN_10
+#define MTS_USART3_TX_GPIO_Port GPIOC
 #define MTS_TIM8_CH3_Pin LL_GPIO_PIN_7
 #define MTS_TIM8_CH3_GPIO_Port GPIOI
 #define MTS_TIM8_CH2_Pin LL_GPIO_PIN_6

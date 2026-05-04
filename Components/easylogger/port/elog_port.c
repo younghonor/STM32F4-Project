@@ -77,7 +77,7 @@ void elog_port_output(const char *log, size_t size) {
  * output lock
  */
 void elog_port_output_lock(void) {
-    
+     
     /* add your code here */
     osSemaphoreAcquire(elog_lockHandle, osWaitForever);
     

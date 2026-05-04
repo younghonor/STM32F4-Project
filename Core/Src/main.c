@@ -55,7 +55,7 @@ typedef enum {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define RX_BUF_SIZE 256
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -69,10 +69,7 @@ typedef enum {
 reset_cause_t g_reset_cause = RESET_CAUSE_UNKNOWN;
 uint32_t g_reset_flags = 0;
 
-#define RX_BUF_SIZE 256
 uint8_t usart1_rx_buf[RX_BUF_SIZE];
-
-// �ź������
 extern SemaphoreHandle_t uartTxCompleteSem;
 extern SemaphoreHandle_t uartRxIdleSem;
 
@@ -149,13 +146,12 @@ int main(void)
   MX_RTC_Init();
   MX_SPI1_Init();
   MX_TIM1_Init();
-  MX_USART1_UART_Init();
   MX_I2C2_Init();
   MX_I2C3_Init();
   MX_SPI2_Init();
-  MX_SPI3_Init();
   MX_TIM8_Init();
   MX_USB_OTG_HS_PCD_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
   //size_t HCLK = HAL_RCC_GetHCLKFreq();
@@ -163,14 +159,17 @@ int main(void)
   //printf("HCLK=%lu\r\n", HCLK);
   //printf("Systick LOAD=%lu\r\n", SysTick->LOAD);
   //printf("Systick CTRL=0x%08lx\r\n", SysTick->CTRL);
-      
-  LL_DMA_SetMemoryAddress(DMA2, LL_DMA_STREAM_5, (uint32_t)usart1_rx_buf);
-  LL_DMA_SetDataLength(DMA2, LL_DMA_STREAM_5, RX_BUF_SIZE);
-  LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5);
   
-  LL_USART_EnableDMAReq_RX(USART1);
-  LL_USART_EnableIT_IDLE(USART1);
-    
+#if 1
+  LL_DMA_SetMemoryAddress(DMA1, LL_DMA_STREAM_1, (uint32_t)usart1_rx_buf);
+  LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_1, RX_BUF_SIZE);
+  LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_1);
+  
+  LL_USART_EnableDMAReq_RX(USART3);
+  LL_USART_EnableIT_IDLE(USART3);
+#endif
+
+#if 1
   elog_init();
   elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL & ~ELOG_FMT_P_INFO);
   elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
@@ -179,7 +178,7 @@ int main(void)
   elog_set_fmt(ELOG_LVL_DEBUG, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_P_INFO));
   elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_P_INFO));
   elog_start();
-
+#endif 
   /* USER CODE END 2 */
 
   /* Init scheduler */
