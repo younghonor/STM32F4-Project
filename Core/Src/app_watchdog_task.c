@@ -76,7 +76,6 @@ extern IWDG_HandleTypeDef hiwdg;
 void vStartWatchdogTask(void *argument) {
 
     for(;;) {
-        //log_i("watchdog task running...");
         if (Watchdog_CheckAlive() == 0) {
             // 如果有任务没有报告还活着，可以选择重置系统或执行其他操作
             NVIC_SystemReset();
@@ -84,6 +83,7 @@ void vStartWatchdogTask(void *argument) {
 
         //LL_IWDG_ReloadCounter(IWDG);
         HAL_IWDG_Refresh(&hiwdg);
+        log_w("running: watchdog task");
         osDelay(500); // 每500ms喂狗一次
     }
 }

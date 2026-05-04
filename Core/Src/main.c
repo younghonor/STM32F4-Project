@@ -86,7 +86,8 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
 {
     // 这里可以设置断点或打印
     taskDISABLE_INTERRUPTS();
-    //__BKPT(0);
+    log_e("Stack overflow in task: %s", pcTaskName);
+    __BKPT(0);
     //vTaskSuspend(xTask);
     //while(1);
 }

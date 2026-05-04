@@ -53,12 +53,12 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Definitions for LedTask */
 const osThreadAttr_t LedTask_attributes = {
   .name = "LedTask",
-  .stack_size = 128 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for elog */
 osThreadId_t elogHandle;
-uint32_t elogBuffer[ 2048 ];
+uint32_t elogBuffer[ 256 ];//ELOG_LINE_BUF_SIZE*2*4 bytes
 osStaticThreadDef_t elogControlBlock;
 const osThreadAttr_t elog_attributes = {
   .name = "elog",
@@ -90,7 +90,7 @@ const osSemaphoreAttr_t elog_dma_lock_attributes = {
 osThreadId_t DefaultTaskHandle;
 const osThreadAttr_t DefaultTask_attributes = {
   .name = "DefaultTask",
-  .stack_size = 128 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 
@@ -172,7 +172,7 @@ void MX_FREERTOS_Init(void) {
   osThreadId_t watchdogTaskHandle = osThreadNew(vStartWatchdogTask, NULL, &(osThreadAttr_t){
       .name = "watchdogTask",
       .priority = osPriorityBelowNormal,
-      .stack_size = 128
+      .stack_size = 512*4
     });
 
   /* creation of elog */
@@ -201,8 +201,8 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
     Watchdog_ReportAlive(xTaskGetCurrentTaskHandle());
-    osDelay(100);
-    //log_i("default task running...");
+    osDelay(1000);
+    log_e("running: default task");
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -222,12 +222,13 @@ void vStartLedTask(void *argument)
   Watchdog_RegisterTask(xTaskGetCurrentTaskHandle(), pcTaskGetTaskName(xTaskGetCurrentTaskHandle()));
   /* Infinite loop */
   for (;;) {
-    Watchdog_ReportAlive(xTaskGetCurrentTaskHandle());
     HAL_GPIO_TogglePin(MTS_LED_G_GPIO_Port, MTS_LED_G_Pin);
-    osDelay(100);//HAL_Delay(1000);
+    Watchdog_ReportAlive(xTaskGetCurrentTaskHandle());
+    osDelay(1000);//HAL_Delay(1000);
     HAL_GPIO_TogglePin(MTS_LED_R_GPIO_Port, MTS_LED_R_Pin);
-    osDelay(100);
-	  //log_i("led task running...");
+    Watchdog_ReportAlive(xTaskGetCurrentTaskHandle());
+    osDelay(1000);
+	  log_i("running: led task");
   }
   /* USER CODE END 5 */
 }
