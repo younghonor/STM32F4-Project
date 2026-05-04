@@ -11,6 +11,7 @@
 typedef struct {
     osThreadId_t handle;
     TickType_t last_alive_tick;
+    char *pcTaskName;
 } task_watchdog_entry_t;
 
 task_watchdog_entry_t g_watchdog_table[MAX_TASK_CHECK];
@@ -30,7 +31,7 @@ void Watchdog_Init(void){
 
 }
 
-void Watchdog_RegisterTask(osThreadId_t handle) {
+void Watchdog_RegisterTask(osThreadId_t handle, char *pcTaskName) {
     //add mutex lock
     osSemaphoreAcquire(watchdog_lockHandle, osWaitForever);
 
@@ -38,6 +39,7 @@ void Watchdog_RegisterTask(osThreadId_t handle) {
         if (g_watchdog_table[i].handle == NULL) {
             g_watchdog_table[i].handle = handle;
             g_watchdog_table[i].last_alive_tick = xTaskGetTickCount();
+            g_watchdog_table[i].pcTaskName = pcTaskName;
             break;
         }
     }
@@ -45,14 +47,14 @@ void Watchdog_RegisterTask(osThreadId_t handle) {
 }
 
 void Watchdog_ReportAlive(osThreadId_t handle) {
-    osSemaphoreAcquire(watchdog_lockHandle, osWaitForever);
+    //osSemaphoreAcquire(watchdog_lockHandle, osWaitForever);
     for (int i = 0; i < MAX_TASK_CHECK; i++) {
         if (g_watchdog_table[i].handle == handle) {
             g_watchdog_table[i].last_alive_tick = xTaskGetTickCount();
             break;
         }
     }
-    osSemaphoreRelease(watchdog_lockHandle);
+    //osSemaphoreRelease(watchdog_lockHandle);
 }
 
 static uint8_t Watchdog_CheckAlive(void) {
@@ -63,6 +65,7 @@ static uint8_t Watchdog_CheckAlive(void) {
 
         TickType_t current_tick = xTaskGetTickCount();
         if ((current_tick - g_watchdog_table[i].last_alive_tick) > pdMS_TO_TICKS(2000)) {
+            log_e("Task '%s' is not alive! Last alive tick: %lu", g_watchdog_table[i].pcTaskName, g_watchdog_table[i].last_alive_tick);
             all_alive = 0; // 任务超过2秒没有报告还活着
             break;
         }
@@ -73,7 +76,7 @@ extern IWDG_HandleTypeDef hiwdg;
 void vStartWatchdogTask(void *argument) {
 
     for(;;) {
-         log_i("watchdog task running...");
+        //log_i("watchdog task running...");
         if (Watchdog_CheckAlive() == 0) {
             // 如果有任务没有报告还活着，可以选择重置系统或执行其他操作
             NVIC_SystemReset();

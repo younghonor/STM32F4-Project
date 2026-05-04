@@ -7,5 +7,5 @@
 void vStartWatchdogTask(void *argument);
 void Watchdog_ReportAlive(osThreadId_t handle);
 void Watchdog_Init(void);
-void Watchdog_RegisterTask(osThreadId_t handle);
+void Watchdog_RegisterTask(osThreadId_t handle, char *pcTaskName);
 #endif //APP_WATCHDOG_TASK_H

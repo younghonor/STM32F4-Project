@@ -145,7 +145,7 @@ void elog_entry(void *para) {
 #else
     static char poll_get_buf[ELOG_ASYNC_OUTPUT_BUF_SIZE - 4];
 #endif
-    Watchdog_RegisterTask(xTaskGetCurrentTaskHandle());
+    //Watchdog_RegisterTask(xTaskGetCurrentTaskHandle(), pcTaskGetTaskName(xTaskGetCurrentTaskHandle()));
 
     for(;;)
     {
@@ -156,7 +156,7 @@ void elog_entry(void *para) {
         /* polling gets and outputs the log */
         while (1) {
             /* report alive to watchdog */
-            Watchdog_ReportAlive(xTaskGetCurrentTaskHandle());
+            //Watchdog_ReportAlive(xTaskGetCurrentTaskHandle());
 #ifdef ELOG_ASYNC_LINE_OUTPUT
             get_log_size = elog_async_get_line_log(poll_get_buf, sizeof(poll_get_buf));
 #else

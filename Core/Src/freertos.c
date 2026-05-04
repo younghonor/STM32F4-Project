@@ -58,7 +58,7 @@ const osThreadAttr_t LedTask_attributes = {
 };
 /* Definitions for elog */
 osThreadId_t elogHandle;
-uint32_t elogBuffer[ 512 ];
+uint32_t elogBuffer[ 2048 ];
 osStaticThreadDef_t elogControlBlock;
 const osThreadAttr_t elog_attributes = {
   .name = "elog",
@@ -196,13 +196,13 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
-  Watchdog_RegisterTask(xTaskGetCurrentTaskHandle());
+  Watchdog_RegisterTask(xTaskGetCurrentTaskHandle(),pcTaskGetTaskName(xTaskGetCurrentTaskHandle()));
   /* Infinite loop */
   for(;;)
   {
     Watchdog_ReportAlive(xTaskGetCurrentTaskHandle());
-    osDelay(1);
-    log_i("default task running...");
+    osDelay(100);
+    //log_i("default task running...");
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -219,7 +219,7 @@ void StartDefaultTask(void *argument)
 void vStartLedTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-  Watchdog_RegisterTask(xTaskGetCurrentTaskHandle());
+  Watchdog_RegisterTask(xTaskGetCurrentTaskHandle(), pcTaskGetTaskName(xTaskGetCurrentTaskHandle()));
   /* Infinite loop */
   for (;;) {
     Watchdog_ReportAlive(xTaskGetCurrentTaskHandle());
@@ -227,7 +227,7 @@ void vStartLedTask(void *argument)
     osDelay(100);//HAL_Delay(1000);
     HAL_GPIO_TogglePin(MTS_LED_R_GPIO_Port, MTS_LED_R_Pin);
     osDelay(100);
-	  log_i("led task running...");
+	  //log_i("led task running...");
   }
   /* USER CODE END 5 */
 }

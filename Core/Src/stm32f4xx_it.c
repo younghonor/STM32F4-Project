@@ -18,12 +18,15 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 #include "stm32f4xx_it.h"
+#include "main.h"
+#include "cmsis_os.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
 #include "semphr.h"
+#define LOG_TAG "ISR"
+#include "elog.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -90,6 +93,29 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
+
+    uint32_t sp;
+    __ASM volatile(
+        "TST LR, #4\n\t"
+        "ITE EQ\n\t"
+        "MRSEQ %0, msp\n\t"
+        "MRSNE %0, psp"
+        : "=r" (sp)
+    );
+    uint32_t *stack = (uint32_t *)sp;
+    uint32_t fault_pc = stack[6];  // 故障发生时的 PC
+    uint32_t fault_lr = stack[5];  // 故障发生时的 LR
+    uint32_t cfsr = SCB->CFSR;
+    uint32_t hfsr = SCB->HFSR;
+    uint32_t bfar = SCB->BFAR;
+
+    //log_e("\r\n======== HardFault Occurred ========\r\n");
+    //log_e("Fault PC = 0x%08X\r\n", fault_pc);
+    //log_e("Fault LR = 0x%08X\r\n", fault_lr);
+    //log_e("CFSR = 0x%08X\r\n", cfsr);
+    //log_e("HFSR = 0x%08X\r\n", hfsr);
+    //log_e("BFAR = 0x%08X\r\n", bfar);
+    //log_e("====================================\r\n");
 
   /* USER CODE END HardFault_IRQn 0 */
   while (1)

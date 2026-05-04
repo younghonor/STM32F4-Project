@@ -82,6 +82,15 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
+{
+    // 这里可以设置断点或打印
+    taskDISABLE_INTERRUPTS();
+    //__BKPT(0);
+    //vTaskSuspend(xTask);
+    //while(1);
+}
+
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart->Instance == huart3.Instance) {
         extern osSemaphoreId_t elog_dma_lockHandle;
@@ -173,6 +182,7 @@ int main(void)
   elog_set_fmt(ELOG_LVL_DEBUG, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_P_INFO));
   elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_P_INFO));
   elog_start();
+  log_i("reset cause: %d, reset flags: 0x%08lx", g_reset_cause, g_reset_flags);
 #endif 
   /* USER CODE END 2 */
 
