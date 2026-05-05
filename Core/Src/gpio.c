@@ -72,8 +72,7 @@ void MX_GPIO_Init(void)
                           |MTS_IO_VCCB_VDDIO_Pin|MTS_VDDIO_I_READ_1_2_Pin|MTS_DVDD_SW_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOI, MTS_IO_DIR0_Pin|MTS_IO_DIR1_Pin|MTS_IO_DIR3_Pin|MTS_IO_VCCB_DVDD_Pin
-                          |MTS_SPI2_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOI, MTS_IO_DIR0_Pin|MTS_IO_DIR1_Pin|MTS_IO_DIR3_Pin|MTS_IO_VCCB_DVDD_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, MTS_IO_EN_Pin|MTS_SHIFTER1_VCCB_SW_Pin|MTS_DAC_BSY_Pin|MTS_DAC_LDAC_Pin
@@ -139,14 +138,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA15 PA12 PA11 PA9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_15|GPIO_PIN_12|GPIO_PIN_11|GPIO_PIN_9;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PB7 PB6 PB2 PB15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_6|GPIO_PIN_2|GPIO_PIN_15;
+  /*Configure GPIO pins : PB7 PB6 PB2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_6|GPIO_PIN_2;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -159,16 +152,26 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PA12 PA11 PA9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_11|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PI3 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
+
   /*Configure GPIO pins : MTS_HID0_Pin MTS_HID1_Pin MTS_HID2_Pin */
   GPIO_InitStruct.Pin = MTS_HID0_Pin|MTS_HID1_Pin|MTS_HID2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : MTS_IO_DIR0_Pin MTS_IO_DIR1_Pin MTS_IO_DIR3_Pin MTS_IO_VCCB_DVDD_Pin
-                           MTS_SPI2_CS_Pin */
-  GPIO_InitStruct.Pin = MTS_IO_DIR0_Pin|MTS_IO_DIR1_Pin|MTS_IO_DIR3_Pin|MTS_IO_VCCB_DVDD_Pin
-                          |MTS_SPI2_CS_Pin;
+  /*Configure GPIO pins : MTS_IO_DIR0_Pin MTS_IO_DIR1_Pin MTS_IO_DIR3_Pin MTS_IO_VCCB_DVDD_Pin */
+  GPIO_InitStruct.Pin = MTS_IO_DIR0_Pin|MTS_IO_DIR1_Pin|MTS_IO_DIR3_Pin|MTS_IO_VCCB_DVDD_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

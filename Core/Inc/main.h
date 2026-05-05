@@ -75,6 +75,8 @@ void Error_Handler(void);
 #define MTS_SPI1_MISO_GPIO_Port GPIOB
 #define MTS_SPI1_CLK_Pin GPIO_PIN_3
 #define MTS_SPI1_CLK_GPIO_Port GPIOB
+#define MTS_SPI1_NSS_Pin GPIO_PIN_15
+#define MTS_SPI1_NSS_GPIO_Port GPIOA
 #define MTS_GPIO0_Pin GPIO_PIN_4
 #define MTS_GPIO0_GPIO_Port GPIOE
 #define MTS_GPIO2_Pin GPIO_PIN_5
@@ -103,8 +105,6 @@ void Error_Handler(void);
 #define MTS_TIM8_CH1_GPIO_Port GPIOI
 #define MTS_Flash_SPI_CS_Pin GPIO_PIN_9
 #define MTS_Flash_SPI_CS_GPIO_Port GPIOG
-#define MTS_SPI2_MOSI_Pin GPIO_PIN_3
-#define MTS_SPI2_MOSI_GPIO_Port GPIOI
 #define MTS_TIM8_CH4_Pin GPIO_PIN_2
 #define MTS_TIM8_CH4_GPIO_Port GPIOI
 #define MTS_HID0_Pin GPIO_PIN_13
@@ -133,8 +133,8 @@ void Error_Handler(void);
 #define MTS_LED_R_GPIO_Port GPIOH
 #define MTS_LED_G_Pin GPIO_PIN_14
 #define MTS_LED_G_GPIO_Port GPIOH
-#define MTS_SPI2_CS_Pin GPIO_PIN_0
-#define MTS_SPI2_CS_GPIO_Port GPIOI
+#define MTS_SPI2_NSS_Pin GPIO_PIN_0
+#define MTS_SPI2_NSS_GPIO_Port GPIOI
 #define MTS_HID2_Pin GPIO_PIN_15
 #define MTS_HID2_GPIO_Port GPIOC
 #define MTS_I2C3_SDA_Pin GPIO_PIN_9
@@ -151,12 +151,22 @@ void Error_Handler(void);
 #define MTS_I2C2_SCL_GPIO_Port GPIOF
 #define MTS_DUT_SPI_CLK_DIR_Pin GPIO_PIN_8
 #define MTS_DUT_SPI_CLK_DIR_GPIO_Port GPIOG
+#define MTS_ADC3_IN9_Pin GPIO_PIN_3
+#define MTS_ADC3_IN9_GPIO_Port GPIOF
+#define MTS_ADC3_IN14_Pin GPIO_PIN_4
+#define MTS_ADC3_IN14_GPIO_Port GPIOF
 #define MTS_EN_VPP_IN_Pin GPIO_PIN_5
 #define MTS_EN_VPP_IN_GPIO_Port GPIOH
 #define MTS_DUT_SPI_SI_DIR_Pin GPIO_PIN_7
 #define MTS_DUT_SPI_SI_DIR_GPIO_Port GPIOG
 #define MTS_MODULE_INT_Pin GPIO_PIN_6
 #define MTS_MODULE_INT_GPIO_Port GPIOG
+#define MTS_ADC_V_VPP_Pin GPIO_PIN_7
+#define MTS_ADC_V_VPP_GPIO_Port GPIOF
+#define MTS_ADC_V_AVDD_Pin GPIO_PIN_6
+#define MTS_ADC_V_AVDD_GPIO_Port GPIOF
+#define MTS_ADC3_IN15_Pin GPIO_PIN_5
+#define MTS_ADC3_IN15_GPIO_Port GPIOF
 #define MTS_LPC86_CS_Pin GPIO_PIN_12
 #define MTS_LPC86_CS_GPIO_Port GPIOH
 #define MTS_LPC86_INT_Pin GPIO_PIN_5
@@ -165,6 +175,12 @@ void Error_Handler(void);
 #define MTS_DUT_SPI_SO_DIR_GPIO_Port GPIOG
 #define MTS_MODULE_RST_Pin GPIO_PIN_3
 #define MTS_MODULE_RST_GPIO_Port GPIOG
+#define MTS_ADC_V_DVDD_Pin GPIO_PIN_10
+#define MTS_ADC_V_DVDD_GPIO_Port GPIOF
+#define MTS_ADC3_IN7_Pin GPIO_PIN_9
+#define MTS_ADC3_IN7_GPIO_Port GPIOF
+#define MTS_ADC3_IN6_Pin GPIO_PIN_8
+#define MTS_ADC3_IN6_GPIO_Port GPIOF
 #define MTS_LEAK_TEST_SEL3_Pin GPIO_PIN_11
 #define MTS_LEAK_TEST_SEL3_GPIO_Port GPIOH
 #define MTS_LEAK_TEST_SEL4_Pin GPIO_PIN_10
@@ -173,6 +189,12 @@ void Error_Handler(void);
 #define MTS_SHIFTER1_VCCB_SW_GPIO_Port GPIOD
 #define MTS_IO_VCCB_VDDIO_Pin GPIO_PIN_2
 #define MTS_IO_VCCB_VDDIO_GPIO_Port GPIOG
+#define MTS_ADC_V_VDDIO_Pin GPIO_PIN_1
+#define MTS_ADC_V_VDDIO_GPIO_Port GPIOC
+#define MTS_ADC1_IN12_Pin GPIO_PIN_2
+#define MTS_ADC1_IN12_GPIO_Port GPIOC
+#define MTS_ADC1_IN13_Pin GPIO_PIN_3
+#define MTS_ADC1_IN13_GPIO_Port GPIOC
 #define MTS_VDDIO_I_READ_1_2_Pin GPIO_PIN_1
 #define MTS_VDDIO_I_READ_1_2_GPIO_Port GPIOG
 #define MTS_VDDIO_I_SEL_2_Pin GPIO_PIN_6
@@ -185,8 +207,14 @@ void Error_Handler(void);
 #define MTS_DAC_BSY_GPIO_Port GPIOD
 #define MTS_DAC_LDAC_Pin GPIO_PIN_13
 #define MTS_DAC_LDAC_GPIO_Port GPIOD
+#define MTS_ADC1_IN1_Pin GPIO_PIN_1
+#define MTS_ADC1_IN1_GPIO_Port GPIOA
+#define MTS_ADC1_IN0_Pin GPIO_PIN_0
+#define MTS_ADC1_IN0_GPIO_Port GPIOA
 #define MTS_SPI3_CS_Pin GPIO_PIN_4
 #define MTS_SPI3_CS_GPIO_Port GPIOA
+#define MTS_ADC1_IN14_Pin GPIO_PIN_4
+#define MTS_ADC1_IN14_GPIO_Port GPIOC
 #define MTS_AVDD_I_SEL_1_Pin GPIO_PIN_13
 #define MTS_AVDD_I_SEL_1_GPIO_Port GPIOF
 #define MTS_DVDD_SW_Pin GPIO_PIN_0
@@ -199,6 +227,12 @@ void Error_Handler(void);
 #define MTS_I2C_EN_GPIO_Port GPIOD
 #define MTS_REV_IO_0_Pin GPIO_PIN_10
 #define MTS_REV_IO_0_GPIO_Port GPIOD
+#define MTS_ADC1_IN2_Pin GPIO_PIN_2
+#define MTS_ADC1_IN2_GPIO_Port GPIOA
+#define MTS_ADC1_IN6_Pin GPIO_PIN_6
+#define MTS_ADC1_IN6_GPIO_Port GPIOA
+#define MTS_ADC1_IN15_Pin GPIO_PIN_5
+#define MTS_ADC1_IN15_GPIO_Port GPIOC
 #define MTS_AVDD_I_SEL_2_Pin GPIO_PIN_12
 #define MTS_AVDD_I_SEL_2_GPIO_Port GPIOF
 #define MTS_AVDD_I_READ_1_2_Pin GPIO_PIN_15
@@ -231,6 +265,8 @@ void Error_Handler(void);
 #define MTS_VEN_ID_1_GPIO_Port GPIOE
 #define MTS_SPI2_MISO_Pin GPIO_PIN_14
 #define MTS_SPI2_MISO_GPIO_Port GPIOB
+#define MTS_SPI2_MOSI_Pin GPIO_PIN_15
+#define MTS_SPI2_MOSI_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

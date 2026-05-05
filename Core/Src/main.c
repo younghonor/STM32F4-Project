@@ -84,10 +84,9 @@ void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN 0 */
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
 {
-    // 这里可以设置断点或打印
-    taskDISABLE_INTERRUPTS();
+    taskDISABLE_INTERRUPTS();//disable interrupt to avoid the system to reset by WDT
     log_e("Stack overflow in task: %s", pcTaskName);
-    __BKPT(0);
+    __BKPT(0);//set breakpoint to let the user to check the stack overflow issue in debug mode
     //vTaskSuspend(xTask);
     //while(1);
 }
@@ -168,12 +167,6 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  //size_t HCLK = HAL_RCC_GetHCLKFreq();
-  //printf("SystemCoreClock=%lu\r\n", SystemCoreClock);
-  //printf("HCLK=%lu\r\n", HCLK);
-  //printf("Systick LOAD=%lu\r\n", SysTick->LOAD);
-  //printf("Systick CTRL=0x%08lx\r\n", SysTick->CTRL);
-
 #if 1
   elog_init();
   elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL & ~ELOG_FMT_P_INFO);
@@ -184,6 +177,12 @@ int main(void)
   elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_P_INFO));
   elog_start();
   log_i("reset cause: %d, reset flags: 0x%08lx", g_reset_cause, g_reset_flags);
+  
+  size_t HCLK = HAL_RCC_GetHCLKFreq();
+  log_i("SystemCoreClock=%lu", SystemCoreClock);
+  log_i("HCLK=%lu", HCLK);
+  log_i("Systick LOAD=%lu", SysTick->LOAD);
+  log_i("Systick CTRL=0x%08lx", SysTick->CTRL);
 #endif 
   /* USER CODE END 2 */
 
