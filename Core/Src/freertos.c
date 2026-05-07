@@ -27,6 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "semphr.h"
 #include "app_watchdog_task.h"
+#include "board_access_task.h"
 #define LOG_TAG "FreeRTOS"
 #include "elog.h"
 
@@ -67,6 +68,13 @@ const osThreadAttr_t elog_attributes = {
   .cb_mem = &elogControlBlock,
   .cb_size = sizeof(elogControlBlock),
   .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for BoardAccessTask */
+osThreadId_t BoardAccessTaskHandle;
+const osThreadAttr_t BoardAccessTask_attributes = {
+  .name = "BoardAccess",
+  .stack_size = 256 * 4,
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for elog_lock */
 osSemaphoreId_t elog_lockHandle;
@@ -168,6 +176,9 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
   /* creation of LedTask */
   osThreadId_t LedTaskHandle = osThreadNew(vStartLedTask, NULL, &LedTask_attributes);
+
+  /* creation of BoardAccessTask */
+  BoardAccessTaskHandle = osThreadNew(vBoardAccessTask, NULL, &BoardAccessTask_attributes);
 
   osThreadId_t watchdogTaskHandle = osThreadNew(vStartWatchdogTask, NULL, &(osThreadAttr_t){
       .name = "watchdogTask",
